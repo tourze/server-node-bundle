@@ -13,6 +13,9 @@ class ServerNodeBundle extends Bundle implements BundleDependencyInterface
     {
         return [
             \Tourze\TempFileBundle\TempFileBundle::class => ['all' => true],
+            \Tourze\DoctrineRandomBundle\DoctrineRandomBundle::class => ['all' => true],
+            \Tourze\DoctrineTrackBundle\DoctrineTrackBundle::class => ['all' => true],
+            \Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle::class => ['all' => true],
         ];
     }
 }
