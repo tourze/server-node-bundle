@@ -1,0 +1,64 @@
+<?php
+
+namespace ServerNodeBundle\DataFixtures;
+
+use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Persistence\ObjectManager;
+use ServerNodeBundle\Entity\Node;
+use ServerNodeBundle\Enum\NodeStatus;
+use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
+
+class NodeFixtures extends Fixture
+{
+    public const REFERENCE_NODE_1 = 'node-1';
+    public const REFERENCE_NODE_2 = 'node-2';
+
+    public function load(ObjectManager $manager): void
+    {
+        $node1 = new Node();
+        $node1->setName('测试服务器1');
+        $node1->setCountry(GBT_2659_2000::HK);
+        $node1->setDomainName('server1.example.com');
+        $node1->setSshHost('192.168.1.100');
+        $node1->setSshPort(22);
+        $node1->setSshUser('root');
+        $node1->setSshPassword('password123');
+        $node1->setMainInterface('eth0');
+        $node1->setValid(true);
+        $node1->setFrontendDomain('frontend1.example.com');
+        $node1->setStatus(NodeStatus::ONLINE);
+        $node1->setTags(['测试', '高性能']);
+        $node1->setOnlineIp('192.168.1.100');
+        $node1->setRxBandwidth('1000000');
+        $node1->setTxBandwidth('500000');
+        $node1->setLoadOneMinute('0.5');
+        $node1->setUserCount(10);
+
+        $manager->persist($node1);
+        $this->addReference(self::REFERENCE_NODE_1, $node1);
+
+        $node2 = new Node();
+        $node2->setName('测试服务器2');
+        $node2->setCountry(GBT_2659_2000::CN);
+        $node2->setDomainName('server2.example.com');
+        $node2->setSshHost('192.168.1.101');
+        $node2->setSshPort(22);
+        $node2->setSshUser('admin');
+        $node2->setSshPassword('secure123');
+        $node2->setMainInterface('eth0');
+        $node2->setValid(true);
+        $node2->setFrontendDomain('frontend2.example.com');
+        $node2->setStatus(NodeStatus::OFFLINE);
+        $node2->setTags(['测试', '备用']);
+        $node2->setOnlineIp('192.168.1.101');
+        $node2->setRxBandwidth('800000');
+        $node2->setTxBandwidth('400000');
+        $node2->setLoadOneMinute('0.2');
+        $node2->setUserCount(5);
+
+        $manager->persist($node2);
+        $this->addReference(self::REFERENCE_NODE_2, $node2);
+
+        $manager->flush();
+    }
+}

@@ -1,0 +1,398 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}
+    {{ node.name }} - 负载监控
+{% endblock %}
+
+{% block content_title %}
+    <div class="d-flex justify-content-between">
+        <div>
+            <h1>{{ node.name }} - 负载监控</h1>
+        </div>
+        <div>
+            <a href="{{ referer }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <!-- 统计信息卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">平均CPU使用率</h5>
+                    <h2 class="display-4">{{ avgCpuUsage|number_format(1) }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">平均系统负载</h5>
+                    <h2 class="display-4">{{ avgLoad|number_format(2) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">平均内存使用率</h5>
+                    <h2 class="display-4">{{ avgMemUsage|number_format(1) }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">平均进程数</h5>
+                    <h2 class="display-4">{{ avgProcess|number_format(0) }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- CPU使用率图表 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">CPU使用率（24小时）</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="cpuChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统负载图表 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">系统负载（24小时）</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="loadChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内存使用图表 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">内存使用（24小时）</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="memoryChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 进程数量图表 -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">进程数量（24小时）</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="processChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // 格式化内存大小为更易读的单位
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // 共享的时间标签
+        const labels = {{ labels|json_encode|raw }};
+        
+        // CPU数据
+        const cpuUserData = {{ cpuUserData|json_encode|raw }};
+        const cpuSystemData = {{ cpuSystemData|json_encode|raw }};
+        const cpuStolenData = {{ cpuStolenData|json_encode|raw }};
+        const cpuIdleData = {{ cpuIdleData|json_encode|raw }};
+        
+        // 负载数据
+        const loadOneData = {{ loadOneData|json_encode|raw }};
+        const loadFiveData = {{ loadFiveData|json_encode|raw }};
+        const loadFifteenData = {{ loadFifteenData|json_encode|raw }};
+        
+        // 内存数据
+        const memoryTotalData = {{ memoryTotalData|json_encode|raw }};
+        const memoryUsedData = {{ memoryUsedData|json_encode|raw }};
+        const memoryFreeData = {{ memoryFreeData|json_encode|raw }};
+        const memoryAvailableData = {{ memoryAvailableData|json_encode|raw }};
+        
+        // 进程数据
+        const processRunningData = {{ processRunningData|json_encode|raw }};
+        const processTotalData = {{ processTotalData|json_encode|raw }};
+
+        // 创建CPU图表
+        const ctxCpu = document.getElementById('cpuChart').getContext('2d');
+        const cpuChart = new Chart(ctxCpu, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '用户CPU',
+                        data: cpuUserData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        stack: 'stack1'
+                    },
+                    {
+                        label: '系统CPU',
+                        data: cpuSystemData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        stack: 'stack1'
+                    },
+                    {
+                        label: '被偷CPU',
+                        data: cpuStolenData,
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        stack: 'stack1'
+                    },
+                    {
+                        label: '空闲CPU',
+                        data: cpuIdleData,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        hidden: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stacked: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '百分比 (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // 创建负载图表
+        const ctxLoad = document.getElementById('loadChart').getContext('2d');
+        const loadChart = new Chart(ctxLoad, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '1分钟负载',
+                        data: loadOneData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    },
+                    {
+                        label: '5分钟负载',
+                        data: loadFiveData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    },
+                    {
+                        label: '15分钟负载',
+                        data: loadFifteenData,
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '负载'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // 创建内存图表
+        const ctxMemory = document.getElementById('memoryChart').getContext('2d');
+        const memoryChart = new Chart(ctxMemory, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '已用内存',
+                        data: memoryUsedData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: '可用内存',
+                        data: memoryAvailableData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: '总内存',
+                        data: memoryTotalData,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.1,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatBytes(value);
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '内存'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += formatBytes(context.raw);
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // 创建进程图表
+        const ctxProcess = document.getElementById('processChart').getContext('2d');
+        const processChart = new Chart(ctxProcess, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '总进程数',
+                        data: processTotalData,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    },
+                    {
+                        label: '运行中进程',
+                        data: processRunningData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '进程数'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

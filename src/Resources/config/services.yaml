@@ -1,0 +1,20 @@
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: true      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+  ServerNodeBundle\Application\:
+    resource: '../../Application/'
+  ServerNodeBundle\Command\:
+    resource: '../../Command/'
+  ServerNodeBundle\Controller\:
+    resource: '../../Controller/'
+  ServerNodeBundle\DataFixtures\:
+    resource: '../../DataFixtures/'
+  ServerNodeBundle\MessageHandler\:
+    resource: '../../MessageHandler/'
+  ServerNodeBundle\Repository\:
+    resource: '../../Repository/'
+  ServerNodeBundle\Service\:
+    resource: '../../Service/'
