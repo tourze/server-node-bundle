@@ -43,8 +43,10 @@
     "tourze/easy-admin-attribute": "0.1.*",
     "tourze/easy-admin-menu-bundle": "0.1.*",
     "tourze/enum-extra": "~0.0.5",
+    "tourze/gb-t-2659": "0.0.*",
     "tourze/symfony-async-bundle": "0.0.*",
     "tourze/symfony-cron-job-bundle": "0.1.*",
+    "tourze/symfony-routing-auto-loader-bundle": "0.0.*",
     "tourze/symfony-temp-file-bundle": "0.0.*",
     "yiisoft/arrays": "^3"
   },

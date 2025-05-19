@@ -201,7 +201,7 @@ class SSHConnection
 
             foreach ($files as $file) {
                 if ($file->isFile()) {
-                    $fileList[] = mb_substr($file->getPathname(), mb_strlen($directory) + 1);
+                    $fileList[] = substr($file->getPathname(), strlen($directory) + 1);
                 }
             }
         }
