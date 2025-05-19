@@ -27,7 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use phpseclib3\Net\SSH2;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Enum\NodeStatus;
-use ServerNodeBundle\Service\NodeMonitorService;
+use ServerStatsBundle\Service\NodeMonitorService;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

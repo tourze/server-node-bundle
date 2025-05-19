@@ -130,9 +130,6 @@ class Node implements \Stringable
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $tcpCongestionControl = null;
 
-    #[ORM\OneToMany(targetEntity: MinuteStat::class, mappedBy: 'node', orphanRemoval: true)]
-    private Collection $stats;
-
     #[ORM\Column(length: 40, nullable: true, enumType: NodeStatus::class, options: ['comment' => '状态'])]
     private ?NodeStatus $status = NodeStatus::INIT;
 
@@ -176,7 +173,6 @@ class Node implements \Stringable
     public function __construct()
     {
         $this->applications = new ArrayCollection();
-        $this->stats = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -482,33 +478,6 @@ class Node implements \Stringable
     public function setTcpCongestionControl(?string $tcpCongestionControl): static
     {
         $this->tcpCongestionControl = $tcpCongestionControl;
-
-        return $this;
-    }
-
-    public function getStats(): Collection
-    {
-        return $this->stats;
-    }
-
-    public function addStat(MinuteStat $stat): static
-    {
-        if (!$this->stats->contains($stat)) {
-            $this->stats->add($stat);
-            $stat->setNode($this);
-        }
-
-        return $this;
-    }
-
-    public function removeStat(MinuteStat $stat): static
-    {
-        if ($this->stats->removeElement($stat)) {
-            // set the owning side to null (unless already changed)
-            if ($stat->getNode() === $this) {
-                throw new \LogicException('不能移除节点下的统计，请先删除统计');
-            }
-        }
 
         return $this;
     }
