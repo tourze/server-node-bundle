@@ -16,6 +16,7 @@
     "knplabs/knp-menu": "^3.7",
     "nesbot/carbon": "^2.72 || ^3",
     "phpseclib/phpseclib": "^3.0",
+    "phpunit/php-timer": "^6.0.0",
     "psr/log": "^3|^2|^1",
     "symfony/config": "^6.4",
     "symfony/console": "^6.4",
