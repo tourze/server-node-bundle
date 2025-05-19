@@ -3,9 +3,9 @@
 namespace ServerNodeBundle\Service;
 
 use BizUserBundle\Entity\BizUser;
-use ServerNodeBundle\Entity\Application;
+use ServerApplicationBundle\Entity\Application;
+use ServerApplicationBundle\Repository\ApplicationRepository;
 use ServerNodeBundle\Entity\Node;
-use ServerNodeBundle\Repository\ApplicationRepository;
 use ServerNodeBundle\Repository\NodeRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;

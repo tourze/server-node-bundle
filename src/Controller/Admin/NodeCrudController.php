@@ -25,13 +25,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use phpseclib3\Net\SSH2;
-use ServerNodeBundle\Dto\ApplicationDeployRequest;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Enum\NodeStatus;
-use ServerNodeBundle\Service\ApplicationDeployService;
 use ServerNodeBundle\Service\NodeMonitorService;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
@@ -40,7 +37,6 @@ class NodeCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly NodeMonitorService $nodeMonitorService,
-        private readonly ApplicationDeployService $applicationDeployService,
     ) {
     }
 
@@ -240,24 +236,14 @@ class NodeCrudController extends AbstractCrudController
             ->linkToCrudAction('loadMonitor')
             ->setCssClass('btn btn-warning');
 
-        $deployAll = Action::new('deployAll', '部署所有应用')
-            ->setIcon('fa fa-rocket')
-            ->linkToCrudAction('deployAll')
-            ->setCssClass('btn btn-success')
-            ->displayIf(function (Node $node) {
-                return !$node->getApplications()->isEmpty();
-            });
-
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $testSsh)
             ->add(Crud::PAGE_INDEX, $networkMonitor)
             ->add(Crud::PAGE_INDEX, $loadMonitor)
-            ->add(Crud::PAGE_INDEX, $deployAll)
             ->add(Crud::PAGE_DETAIL, $testSsh)
             ->add(Crud::PAGE_DETAIL, $networkMonitor)
             ->add(Crud::PAGE_DETAIL, $loadMonitor)
-            ->add(Crud::PAGE_DETAIL, $deployAll)
             ->add(Crud::PAGE_EDIT, $testSsh)
             ->update(Crud::PAGE_INDEX, Action::NEW, fn(Action $action) => $action->setIcon('fa fa-plus')->setLabel('新增节点'))
             ->update(Crud::PAGE_INDEX, Action::EDIT, fn(Action $action) => $action->setIcon('fa fa-edit'))
@@ -356,61 +342,5 @@ class NodeCrudController extends AbstractCrudController
             'node' => $node,
             'referer' => $request->headers->get('referer'),
         ], $monitorData));
-    }
-
-    /**
-     * 部署所有应用
-     */
-    #[AdminAction('{entityId}/deploy-all', 'deploy_all')]
-    public function deployAll(AdminContext $context, Request $request): Response
-    {
-        $node = $context->getEntity()->getInstance();
-        
-        try {
-            $deployRequest = new ApplicationDeployRequest(
-                nodeId: $node->getId(),
-                deployAll: true
-            );
-            $this->applicationDeployService->deploy($deployRequest);
-            
-            $this->addFlash('success', '所有应用部署任务已提交');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', '部署失败: ' . $e->getMessage());
-        }
-
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['status' => 'success']);
-        }
-
-        $referer = $request->headers->get('referer');
-        return $this->redirect($referer ?: $this->generateUrl('admin'));
-    }
-
-    /**
-     * 部署单个应用
-     */
-    #[AdminAction('{entityId}/deploy-application/{applicationId}', 'deploy_application')]
-    public function deployApplication(AdminContext $context, Request $request, string $applicationId): Response
-    {
-        $node = $context->getEntity()->getInstance();
-        
-        try {
-            $deployRequest = new ApplicationDeployRequest(
-                nodeId: $node->getId(),
-                applicationId: $applicationId
-            );
-            $this->applicationDeployService->deploy($deployRequest);
-            
-            $this->addFlash('success', '应用部署任务已提交');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', '部署失败: ' . $e->getMessage());
-        }
-
-        if ($request->isXmlHttpRequest()) {
-            return new JsonResponse(['status' => 'success']);
-        }
-
-        $referer = $request->headers->get('referer');
-        return $this->redirect($referer ?: $this->generateUrl('admin'));
     }
 }

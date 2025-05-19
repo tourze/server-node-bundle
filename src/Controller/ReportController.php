@@ -4,10 +4,10 @@ namespace ServerNodeBundle\Controller;
 
 use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
-use ServerNodeBundle\Application\StatsCollector;
-use ServerNodeBundle\Repository\ApplicationRepository;
+use ServerApplicationBundle\Application\StatsCollector;
+use ServerApplicationBundle\Repository\ApplicationRepository;
+use ServerApplicationBundle\Service\ApplicationTypeFetcher;
 use ServerNodeBundle\Repository\NodeRepository;
-use ServerNodeBundle\Service\ApplicationTypeFetcher;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
