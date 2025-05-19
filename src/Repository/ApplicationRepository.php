@@ -29,8 +29,8 @@ class ApplicationRepository extends ServiceEntityRepository
         ]);
         foreach ($applications as $application) {
             $application->setOnline(true);
-            $this->persist($application);
+            $this->getEntityManager()->persist($application);
         }
-        $this->flush();
+        $this->getEntityManager()->flush();
     }
 }

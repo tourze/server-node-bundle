@@ -3,9 +3,9 @@
 namespace ServerNodeBundle\MessageHandler;
 
 use Carbon\Carbon;
+use Doctrine\ORM\EntityManagerInterface;
 use ServerNodeBundle\Enum\NodeStatus;
 use ServerNodeBundle\Message\NodeHealthCheckMessage;
-use ServerNodeBundle\Repository\ApplicationRepository;
 use ServerNodeBundle\Repository\NodeRepository;
 use ServerNodeBundle\Service\ApplicationTypeFetcher;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -16,7 +16,7 @@ class NodeHealthCheckHandler
 {
     public function __construct(
         private readonly NodeRepository $nodeRepository,
-        private readonly ApplicationRepository $applicationRepository,
+        private readonly EntityManagerInterface $entityManager,
         private readonly ApplicationTypeFetcher $typeFetcher,
     ) {
     }
@@ -34,11 +34,12 @@ class NodeHealthCheckHandler
             $res = $component->healthCheck($application, $now);
             if (null === $res) {
                 $application->setOnline(null);
-                $this->applicationRepository->save($application);
+                $this->entityManager->persist($application);
                 continue;
             }
             $application->setOnline($res);
-            $this->applicationRepository->save($application);
+            $this->entityManager->persist($application);
+            $this->entityManager->flush();
         }
 
         // 如果一个节点，所有有状态的服务都是正常的，那么他就是正常的
@@ -61,6 +62,7 @@ class NodeHealthCheckHandler
                 $node->setStatus(NodeStatus::OFFLINE);
             }
         }
-        $this->nodeRepository->save($node);
+        $this->entityManager->persist($node);
+        $this->entityManager->flush();
     }
 }

@@ -46,7 +46,8 @@ class MonthlyTrafficRepository extends ServiceEntityRepository
         }
 
         try {
-            $this->save($log);
+            $this->getEntityManager()->persist($log);
+            $this->getEntityManager()->flush();
             return $log;
         } catch (UniqueConstraintViolationException $exception) {
             return $this->findOneBy([

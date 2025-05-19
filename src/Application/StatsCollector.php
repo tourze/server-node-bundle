@@ -4,12 +4,11 @@ namespace ServerNodeBundle\Application;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use ServerNodeBundle\Entity\Application;
 use ServerNodeBundle\Entity\MinuteStat;
-use ServerNodeBundle\Repository\ApplicationRepository;
 use ServerNodeBundle\Repository\DailyTrafficRepository;
 use ServerNodeBundle\Repository\MonthlyTrafficRepository;
-use ServerNodeBundle\Repository\NodeRepository;
 use ServerNodeBundle\SSH\SSHConnection;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -28,9 +27,8 @@ class StatsCollector implements ApplicationInterface, SelectDataFetcher
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly NodeRepository $nodeRepository,
+        private readonly EntityManagerInterface $entityManager,
         private readonly DoctrineService $doctrineService,
-        private readonly ApplicationRepository $applicationRepository,
         private readonly DailyTrafficRepository $dailyTrafficRepository,
         private readonly MonthlyTrafficRepository $monthlyTrafficRepository,
         private readonly TemporaryFileService $temporaryFileService,
@@ -109,7 +107,8 @@ class StatsCollector implements ApplicationInterface, SelectDataFetcher
         if (isset($post['online_ip'])) {
             $node->setOnlineIp($post['online_ip']);
         }
-        $this->nodeRepository->save($node);
+        $this->entityManager->persist($node);
+        $this->entityManager->flush();
 
         // 重复上报一般都是错误的，所以这里我们直接异步插入算了
         $stat = new MinuteStat();
@@ -168,14 +167,13 @@ class StatsCollector implements ApplicationInterface, SelectDataFetcher
         $node->setLoadOneMinute($stat->getLoadOneMinute());
         $node->setRxBandwidth($stat->getRxBandwidth() / 1000000);
         $node->setTxBandwidth($stat->getTxBandwidth() / 1000000);
-        $this->nodeRepository->persist($node);
+        $this->entityManager->persist($node);
 
         // 更新活跃时间
         $application->setActiveTime(Carbon::now());
         $application->setOnline(true); // 统计服务，能收到就说明可以上线了
-        $this->applicationRepository->persist($application);
-
-        $this->applicationRepository->flush();
+        $this->entityManager->persist($application);
+        $this->entityManager->flush();
 
         // 更新流量统计
         // 日流量入库
