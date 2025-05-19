@@ -1,3 +1,0 @@
-server_node_controllers:
-  resource: '../../Controller/'
-  type: attribute
