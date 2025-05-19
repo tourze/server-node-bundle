@@ -65,5 +65,10 @@
     "psr-4": {
       "ServerNodeBundle\\Tests\\": "tests"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ServerNodeBundle\\Tests\\": "tests"
+    }
   }
 }
