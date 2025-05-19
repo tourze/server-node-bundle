@@ -5,6 +5,7 @@ namespace ServerNodeBundle\Application;
 use Carbon\CarbonInterface;
 use ServerNodeBundle\Entity\Application;
 use ServerNodeBundle\Service\PortChecker;
+use ServerNodeBundle\Service\ShellOperator;
 use ServerNodeBundle\SSH\SSHConnection;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Tourze\EnumExtra\SelectDataFetcher;
@@ -20,6 +21,7 @@ class Redis implements ApplicationInterface, SelectDataFetcher
 
     public function __construct(
         private readonly PortChecker $portChecker,
+        private readonly ShellOperator $sshOperator,
     ) {
     }
 
@@ -66,7 +68,7 @@ class Redis implements ApplicationInterface, SelectDataFetcher
         $ssh->createDirectory($redisDir);
 
         // 安装依赖
-        $distro = $ssh->exec('cat /etc/os-release | grep "^ID=" | cut -d= -f2 | tr -d \'"\' | tr -d "\n"');
+        $distro = $this->sshOperator->getDistro($ssh->getSsh());
 
         if ($distro === 'ubuntu' || $distro === 'debian') {
             $ssh->sudoExec('apt-get update');

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Psr\Log\LoggerInterface;
 use ServerNodeBundle\Repository\NodeRepository;
 use ServerNodeBundle\Service\ApplicationTypeFetcher;
+use ServerNodeBundle\Service\ShellOperator;
 use ServerNodeBundle\SSH\SSHConnection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,6 +23,7 @@ class InstallApplicationCommand extends Command
         private readonly NodeRepository $nodeRepository,
         private readonly ApplicationTypeFetcher $typeFetcher,
         private readonly LoggerInterface $logger,
+        private readonly ShellOperator $sshOperator,
     ) {
         parent::__construct();
     }
@@ -57,7 +59,7 @@ class InstallApplicationCommand extends Command
                 try {
                     $component->install(
                         $application,
-                        new SSHConnection($node, $this->logger, $output),
+                        new SSHConnection($node, $this->logger, $this->sshOperator, $output),
                     );
                     $output->writeln("结束部署 {$node} 的 {$application->getType()}服务:" . Carbon::now()->toDateTimeString());
                 } catch (\Throwable $exception) {

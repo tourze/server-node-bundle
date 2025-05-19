@@ -2,12 +2,12 @@
 
 namespace ServerNodeBundle\SSH;
 
-use phpseclib3\Exception\ConnectionClosedException;
 use phpseclib3\Net\SFTP;
 use Psr\Log\LoggerInterface;
 use SebastianBergmann\Timer\Timer;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Exception\SshLoginFailedException;
+use ServerNodeBundle\Service\ShellOperator;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SSHConnection
@@ -17,6 +17,7 @@ class SSHConnection
     public function __construct(
         private readonly Node $node,
         private readonly LoggerInterface $logger,
+        private readonly ShellOperator $sshOperator,
         private readonly ?OutputInterface $output = null,
     ) {
         $this->createSsh();
@@ -56,44 +57,6 @@ class SSHConnection
     }
 
     /**
-     * 默认权限执行命令
-     */
-    public function exec(string $command, int $retryTimes = 5): mixed
-    {
-        $this->output?->writeln("开始执行命令:{$command}");
-
-        $timer = new Timer();
-        $timer->start();
-
-        try {
-            $result = $this->ssh->exec($command);
-            $duration = $timer->stop();
-            $this->logger->info('执行命令成功', [
-                'node' => $this->node,
-                'command' => $command,
-                'result' => $result,
-                'duration' => $duration->asString(),
-            ]);
-            $this->output?->writeln("执行命令成功:{$result}");
-        } catch (ConnectionClosedException $exception) {
-            // No data received from server
-            $this->logger->error('SSH连接报错', [
-                'exception' => $exception,
-                'node' => $this->node,
-            ]);
-            if ($retryTimes > 0) {
-                // 重新连接一次
-                $this->createSsh();
-
-                return $this->exec($command, $retryTimes - 1);
-            }
-            throw $exception;
-        }
-
-        return $result;
-    }
-
-    /**
      * SUDO执行命令
      */
     public function sudoExec(string $command, string $pwd = null): mixed
@@ -104,19 +67,19 @@ class SSHConnection
         $timer->start();
 
         if ($pwd !== null) {
-            $this->exec("cd {$pwd}");
+            $this->sshOperator->exec($this->ssh, "cd {$pwd}");
         }
 
         $result = null;
         try {
             if ('root' === $this->node->getSshUser()) {
-                $result = $this->exec($command);
+                $result = $this->sshOperator->exec($this->ssh, $command);
             } else {
                 if ($this->node->getSshPassword()) {
-                    $result = $this->exec("echo '{$this->node->getSshPassword()}' | sudo -S {$command}");
+                    $result = $this->sshOperator->exec($this->ssh, "echo '{$this->node->getSshPassword()}' | sudo -S {$command}");
                 } else {
                     // TODO 使用证书登录的话，我们要怎么切换到root？
-                    $result = $this->exec("sudo -S {$command}");
+                    $result = $this->sshOperator->exec($this->ssh, "sudo -S {$command}");
                 }
             }
         } finally {
@@ -147,7 +110,7 @@ class SSHConnection
 
         // 如果是zip的话，我们校验一下文件完整性
         if (str_ends_with($path, '.zip')) {
-            $res = $this->exec("unzip -t {$path}");
+            $res = $this->sshOperator->exec($this->ssh, "unzip -t {$path}");
             if (!str_contains($res, 'No errors detected')) {
                 $this->sudoExec("rm -rf {$path}");
 
@@ -162,7 +125,7 @@ class SSHConnection
     {
         if ($this->fileExists($path)) {
             // 看看是否为空
-            $size = $this->exec("wc -c < {$path}");
+            $size = $this->sshOperator->exec($this->ssh, "wc -c < {$path}");
             $size = intval($size);
             if (0 === $size) {
                 $this->sudoExec("rm -rf {$path}");
@@ -186,6 +149,11 @@ class SSHConnection
         } while (!$this->fileExists($path));
 
         return true;
+    }
+
+    public function getSsh(): SFTP
+    {
+        return $this->ssh;
     }
 
     private function listFiles($directory)
@@ -238,7 +206,7 @@ class SSHConnection
                 try {
                     $this->ssh->put($localFile, file_get_contents($localFile));
                     if ($this->ssh->file_exists($localFile)) {
-                        $sum1 = $this->exec("md5sum {$localFile} | awk '{ print \$1 }'");
+                        $sum1 = $this->sshOperator->exec($this->ssh, "md5sum {$localFile} | awk '{ print \$1 }'");
                         $sum1 = trim($sum1);
                         if ($sum1 === $sum2) {
                             $finished = true;
@@ -268,7 +236,7 @@ class SSHConnection
     {
         // 如果文件在远程已经存在，那么我们判断下是否跟本地的md5sum一致，一致的话我们跳过
         if ($this->ssh->file_exists($remoteFile)) {
-            $sum1 = $this->exec("md5sum {$remoteFile} | awk '{ print \$1 }'");
+            $sum1 = $this->sshOperator->exec($this->ssh, "md5sum {$remoteFile} | awk '{ print \$1 }'");
             $sum1 = strtolower(trim($sum1));
             $this->logger->info("远程文件[{$remoteFile}]MD5值：{$sum1}");
             $sum2 = strtolower(md5_file($localFile));
