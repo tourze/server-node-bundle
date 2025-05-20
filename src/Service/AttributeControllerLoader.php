@@ -2,7 +2,6 @@
 
 namespace ServerNodeBundle\Service;
 
-use ServerNodeBundle\Controller\ReportController;
 use ServerNodeBundle\Controller\TerminalController;
 use Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader;
 use Symfony\Component\Config\Loader\Loader;
@@ -34,7 +33,6 @@ class AttributeControllerLoader extends Loader implements RoutingAutoLoaderInter
     public function autoload(): RouteCollection
     {
         $collection = new RouteCollection();
-        $collection->addCollection($this->controllerLoader->load(ReportController::class));
         $collection->addCollection($this->controllerLoader->load(TerminalController::class));
         return $collection;
     }
