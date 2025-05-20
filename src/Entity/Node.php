@@ -21,8 +21,6 @@ use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 #[ORM\Table(name: 'ims_server_node', options: ['comment' => '服务器节点'])]
 class Node implements \Stringable
 {
-    use FlowTrait;
-
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -72,6 +70,16 @@ class Node implements \Stringable
     #[TrackColumn]
     #[ORM\Column(length: 20, nullable: true, options: ['comment' => '主网卡'])]
     private ?string $mainInterface = 'eth0';
+
+    #[TrackColumn]
+    #[ORM\Column(type: Types::BIGINT, options: ['comment' => '总流量'])]
+    private ?string $totalFlow = '0';
+
+    #[ORM\Column(type: Types::BIGINT, options: ['comment' => '上传流量'])]
+    private ?string $uploadFlow = '0';
+
+    #[ORM\Column(type: Types::BIGINT, options: ['comment' => '下载流量'])]
+    private ?string $downloadFlow = '0';
 
     #[TrackColumn]
     #[ORM\Column(length: 120, nullable: true)]
@@ -274,6 +282,42 @@ class Node implements \Stringable
     public function setMainInterface(?string $mainInterface): static
     {
         $this->mainInterface = $mainInterface;
+
+        return $this;
+    }
+
+    public function getTotalFlow(): ?string
+    {
+        return $this->totalFlow;
+    }
+
+    public function setTotalFlow(string $totalFlow): static
+    {
+        $this->totalFlow = $totalFlow;
+
+        return $this;
+    }
+
+    public function getUploadFlow(): ?string
+    {
+        return $this->uploadFlow;
+    }
+
+    public function setUploadFlow(string $uploadFlow): static
+    {
+        $this->uploadFlow = $uploadFlow;
+
+        return $this;
+    }
+
+    public function getDownloadFlow(): ?string
+    {
+        return $this->downloadFlow;
+    }
+
+    public function setDownloadFlow(string $downloadFlow): static
+    {
+        $this->downloadFlow = $downloadFlow;
 
         return $this;
     }
