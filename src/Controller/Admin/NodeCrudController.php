@@ -9,10 +9,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -82,8 +80,6 @@ class NodeCrudController extends AbstractCrudController
             yield NumberField::new('txBandwidth', '出带宽')
                 ->setNumDecimals(2);
             yield BooleanField::new('valid', '有效');
-            yield AssociationField::new('applications', '应用')
-                ->setTemplatePath('@ServerNode/admin/field/applications.html.twig');
             yield DateTimeField::new('createTime', '创建时间');
             yield DateTimeField::new('updateTime', '更新时间');
             return;
@@ -153,20 +149,6 @@ class NodeCrudController extends AbstractCrudController
         yield TextField::new('systemArch', '系统架构');
         yield TextField::new('cpuModel', 'CPU型号');
         yield IntegerField::new('cpuCount', 'CPU核心数');
-
-        // 应用管理选项卡
-        yield FormField::addTab('应用管理')
-            ->setIcon('fa fa-cubes')
-            ->setHelp('管理节点上的应用');
-
-        yield CollectionField::new('applications', '应用列表')
-            ->allowAdd()
-            ->allowDelete()
-            ->setEntryIsComplex(true)
-            ->setFormTypeOptions([
-                'by_reference' => false,
-            ])
-            ->setTemplatePath('@ServerNode/admin/field/applications.html.twig');
 
         // 应用和时间戳字段 - 不可编辑
         if (Crud::PAGE_DETAIL === $pageName) {
