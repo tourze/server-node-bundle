@@ -27,7 +27,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use phpseclib3\Net\SSH2;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Enum\NodeStatus;
-use ServerStatsBundle\Service\NodeMonitorService;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,11 +34,6 @@ use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 
 class NodeCrudController extends AbstractCrudController
 {
-    public function __construct(
-        private readonly NodeMonitorService $nodeMonitorService,
-    ) {
-    }
-
     public static function getEntityFqcn(): string
     {
         return Node::class;
@@ -226,24 +220,10 @@ class NodeCrudController extends AbstractCrudController
                 return $node->getSshHost() && $node->getSshPort() && $node->getSshUser() && $node->getSshPassword();
             });
 
-        $networkMonitor = Action::new('networkMonitor', '网络监控')
-            ->setIcon('fa fa-chart-line')
-            ->linkToCrudAction('networkMonitor')
-            ->setCssClass('btn btn-info');
-
-        $loadMonitor = Action::new('loadMonitor', '负载监控')
-            ->setIcon('fa fa-server')
-            ->linkToCrudAction('loadMonitor')
-            ->setCssClass('btn btn-warning');
-
         return $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $testSsh)
-            ->add(Crud::PAGE_INDEX, $networkMonitor)
-            ->add(Crud::PAGE_INDEX, $loadMonitor)
             ->add(Crud::PAGE_DETAIL, $testSsh)
-            ->add(Crud::PAGE_DETAIL, $networkMonitor)
-            ->add(Crud::PAGE_DETAIL, $loadMonitor)
             ->add(Crud::PAGE_EDIT, $testSsh)
             ->update(Crud::PAGE_INDEX, Action::NEW, fn(Action $action) => $action->setIcon('fa fa-plus')->setLabel('新增节点'))
             ->update(Crud::PAGE_INDEX, Action::EDIT, fn(Action $action) => $action->setIcon('fa fa-edit'))
@@ -306,41 +286,5 @@ class NodeCrudController extends AbstractCrudController
             ->generateUrl();
 
         return $this->redirect($url);
-    }
-
-    /**
-     * 网络监控
-     */
-    #[AdminAction('{entityId}/network-monitor', 'network_monitor')]
-    public function networkMonitor(AdminContext $context, Request $request): Response
-    {
-        $node = $context->getEntity()->getInstance();
-        
-        // 获取网络监控数据
-        $monitorData = $this->nodeMonitorService->getNetworkMonitorData($node);
-
-        // 返回视图
-        return $this->render('@ServerNode/admin/network_monitor.html.twig', array_merge([
-            'node' => $node,
-            'referer' => $request->headers->get('referer'),
-        ], $monitorData));
-    }
-
-    /**
-     * 负载监控
-     */
-    #[AdminAction('{entityId}/load-monitor', 'load_monitor')]
-    public function loadMonitor(AdminContext $context, Request $request): Response
-    {
-        $node = $context->getEntity()->getInstance();
-
-        // 获取负载监控数据
-        $monitorData = $this->nodeMonitorService->getLoadMonitorData($node);
-
-        // 返回视图
-        return $this->render('@ServerNode/admin/load_monitor.html.twig', array_merge([
-            'node' => $node,
-            'referer' => $request->headers->get('referer'),
-        ], $monitorData));
     }
 }
