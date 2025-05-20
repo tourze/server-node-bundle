@@ -13,6 +13,6 @@ class InstallCurl implements ShellInterface
 
     public function execute(SSH2 $ssh): string
     {
-        // TODO: Implement execute() method.
+        return '';
     }
 }
