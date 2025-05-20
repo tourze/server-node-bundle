@@ -7,7 +7,6 @@ use Doctrine\ORM\Mapping as ORM;
 use ServerNodeBundle\Enum\NodeStatus;
 use ServerNodeBundle\Repository\NodeRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineRandomBundle\Attribute\RandomStringColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
@@ -73,16 +72,6 @@ class Node implements \Stringable
     #[TrackColumn]
     #[ORM\Column(length: 20, nullable: true, options: ['comment' => '主网卡'])]
     private ?string $mainInterface = 'eth0';
-
-    #[TrackColumn]
-    #[RandomStringColumn(prefix: 'ak', length: 16)]
-    #[ORM\Column(length: 128, unique: true, nullable: true, options: ['comment' => 'API Key'])]
-    private ?string $apiKey = null;
-
-    #[TrackColumn]
-    #[RandomStringColumn(prefix: 'sk', length: 16)]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => 'API Secret'])]
-    private ?string $apiSecret = null;
 
     #[TrackColumn]
     #[ORM\Column(length: 120, nullable: true)]
@@ -285,30 +274,6 @@ class Node implements \Stringable
     public function setMainInterface(?string $mainInterface): static
     {
         $this->mainInterface = $mainInterface;
-
-        return $this;
-    }
-
-    public function getApiKey(): ?string
-    {
-        return $this->apiKey;
-    }
-
-    public function setApiKey(?string $apiKey): static
-    {
-        $this->apiKey = $apiKey;
-
-        return $this;
-    }
-
-    public function getApiSecret(): ?string
-    {
-        return $this->apiSecret;
-    }
-
-    public function setApiSecret(?string $apiSecret): static
-    {
-        $this->apiSecret = $apiSecret;
 
         return $this;
     }

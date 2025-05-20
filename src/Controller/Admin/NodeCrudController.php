@@ -125,14 +125,6 @@ class NodeCrudController extends AbstractCrudController
         yield TextField::new('sshPassword', 'SSH密码');
         yield TextField::new('mainInterface', '主网卡');
 
-        // API访问选项卡
-        yield FormField::addTab('API访问')
-            ->setIcon('fa fa-key')
-            ->setHelp('API访问凭证配置');
-
-        yield TextField::new('apiKey', 'API Key');
-        yield TextField::new('apiSecret', 'API Secret');
-
         // 状态监控选项卡
         yield FormField::addTab('状态监控')
             ->setIcon('fa fa-info-circle')
