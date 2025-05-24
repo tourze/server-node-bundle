@@ -83,21 +83,30 @@ class NodeTest extends TestCase
         $host = '192.168.1.100';
         $this->node->setSshHost($host);
         $this->assertEquals($host, $this->node->getSshHost());
-        
+
         // 测试SSH端口设置
         $port = 2222;
         $this->node->setSshPort($port);
         $this->assertEquals($port, $this->node->getSshPort());
-        
+
         // 测试SSH用户名设置
         $user = 'root';
         $this->node->setSshUser($user);
         $this->assertEquals($user, $this->node->getSshUser());
-        
+
         // 测试SSH密码设置
         $password = 'secure_password';
         $this->node->setSshPassword($password);
         $this->assertEquals($password, $this->node->getSshPassword());
+
+        // 测试SSH私钥设置
+        $privateKey = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB\n-----END PRIVATE KEY-----";
+        $this->node->setSshPrivateKey($privateKey);
+        $this->assertEquals($privateKey, $this->node->getSshPrivateKey());
+
+        // 测试SSH私钥空值
+        $this->node->setSshPrivateKey(null);
+        $this->assertNull($this->node->getSshPrivateKey());
     }
 
     public function testSetAndGetMainInterface(): void
@@ -105,7 +114,7 @@ class NodeTest extends TestCase
         $interface = 'eth1';
         $this->node->setMainInterface($interface);
         $this->assertEquals($interface, $this->node->getMainInterface());
-        
+
         // 测试空值
         $this->node->setMainInterface(null);
         $this->assertNull($this->node->getMainInterface());
@@ -285,4 +294,4 @@ class NodeTest extends TestCase
         $newNode = new Node();
         $this->assertEquals('', $newNode->__toString());
     }
-} 
+}

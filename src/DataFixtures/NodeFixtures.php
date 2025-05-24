@@ -23,6 +23,10 @@ class NodeFixtures extends Fixture
         $node1->setSshPort(22);
         $node1->setSshUser('root');
         $node1->setSshPassword('password123');
+        $node1->setSshPrivateKey('-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
+UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
+-----END PRIVATE KEY-----');
         $node1->setMainInterface('eth0');
         $node1->setValid(true);
         $node1->setFrontendDomain('frontend1.example.com');
@@ -45,6 +49,10 @@ class NodeFixtures extends Fixture
         $node2->setSshPort(22);
         $node2->setSshUser('admin');
         $node2->setSshPassword('secure123');
+        $node2->setSshPrivateKey('-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
+UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
+-----END PRIVATE KEY-----');
         $node2->setMainInterface('eth0');
         $node2->setValid(true);
         $node2->setFrontendDomain('frontend2.example.com');

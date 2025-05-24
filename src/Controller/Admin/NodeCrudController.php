@@ -16,12 +16,14 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Net\SSH2;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Enum\NodeStatus;
@@ -119,6 +121,10 @@ class NodeCrudController extends AbstractCrudController
         yield IntegerField::new('sshPort', 'SSH端口');
         yield TextField::new('sshUser', 'SSH用户名');
         yield TextField::new('sshPassword', 'SSH密码');
+        yield TextareaField::new('sshPrivateKey', 'SSH私钥')
+            ->setNumOfRows(8)
+            ->setHelp('SSH私钥内容，用于密钥认证。如果设置了私钥，将优先使用密钥认证而非密码认证。')
+            ->hideOnIndex();
         yield TextField::new('mainInterface', '主网卡');
 
         // 状态监控选项卡
@@ -191,7 +197,8 @@ class NodeCrudController extends AbstractCrudController
             ->linkToCrudAction('testSsh')
             ->setCssClass('btn btn-primary')
             ->displayIf(function (Node $node) {
-                return $node->getSshHost() && $node->getSshPort() && $node->getSshUser() && $node->getSshPassword();
+                return $node->getSshHost() && $node->getSshPort() && $node->getSshUser() && 
+                       ($node->getSshPassword() || $node->getSshPrivateKey());
             });
 
         return $actions
@@ -219,6 +226,7 @@ class NodeCrudController extends AbstractCrudController
         $port = $node->getSshPort();
         $username = $node->getSshUser();
         $password = $node->getSshPassword();
+        $privateKey = $node->getSshPrivateKey();
 
         // 测试结果消息
         $message = '';
@@ -229,14 +237,33 @@ class NodeCrudController extends AbstractCrudController
             $ssh = new SSH2($host, $port);
             $ssh->setTimeout(5);
 
-            // 尝试登录
-            if (!$ssh->login($username, $password)) {
+            $loginSuccess = false;
+            $authMethod = '未知';
+
+            // 优先使用私钥认证
+            if ($privateKey) {
+                $key = PublicKeyLoader::load($privateKey);
+                if ($ssh->login($username, $key)) {
+                    $loginSuccess = true;
+                    $authMethod = '私钥认证';
+                }
+            }
+
+            // 如果私钥认证失败，尝试密码认证
+            if (!$loginSuccess && $password) {
+                if ($ssh->login($username, $password)) {
+                    $loginSuccess = true;
+                    $authMethod = '密码认证';
+                }
+            }
+
+            if (!$loginSuccess) {
                 throw new \Exception("主机[{$host}:{$port}]连接失败，请检查SSH配置");
             }
 
             // 执行简单命令测试
             $result = $ssh->exec('echo "SSH连接测试成功"');
-            $message = "SSH连接成功！服务器响应: " . trim($result);
+            $message = "SSH连接成功！认证方式：{$authMethod}，服务器响应: " . trim($result);
 
         } catch (\Exception $e) {
             $message = "SSH连接失败: " . $e->getMessage();

@@ -68,6 +68,10 @@ class Node implements \Stringable
     private ?string $sshPassword = null;
 
     #[TrackColumn]
+    #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => 'SSH私钥'])]
+    private ?string $sshPrivateKey = null;
+
+    #[TrackColumn]
     #[ORM\Column(length: 20, nullable: true, options: ['comment' => '主网卡'])]
     private ?string $mainInterface = 'eth0';
 
@@ -270,6 +274,18 @@ class Node implements \Stringable
     public function setSshPassword(?string $sshPassword): static
     {
         $this->sshPassword = $sshPassword;
+
+        return $this;
+    }
+
+    public function getSshPrivateKey(): ?string
+    {
+        return $this->sshPrivateKey;
+    }
+
+    public function setSshPrivateKey(?string $sshPrivateKey): static
+    {
+        $this->sshPrivateKey = $sshPrivateKey;
 
         return $this;
     }
