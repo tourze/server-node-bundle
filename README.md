@@ -22,14 +22,6 @@ Menu items include:
   - Node Statistics
   - Traffic Statistics
 
-## Configuration
-
-```yaml
-# config/packages/server_node.yaml
-server_node:
-  # Add configuration options here
-```
-
 ## Example
 
 Coming soon.
