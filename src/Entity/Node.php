@@ -72,10 +72,6 @@ class Node implements \Stringable
     private ?string $sshPrivateKey = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 20, nullable: true, options: ['comment' => '主网卡'])]
-    private ?string $mainInterface = 'eth0';
-
-    #[TrackColumn]
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '总流量'])]
     private ?string $totalFlow = '0';
 
@@ -300,18 +296,6 @@ class Node implements \Stringable
     public function setSshPrivateKey(?string $sshPrivateKey): static
     {
         $this->sshPrivateKey = $sshPrivateKey;
-
-        return $this;
-    }
-
-    public function getMainInterface(): ?string
-    {
-        return $this->mainInterface;
-    }
-
-    public function setMainInterface(?string $mainInterface): static
-    {
-        $this->mainInterface = $mainInterface;
 
         return $this;
     }

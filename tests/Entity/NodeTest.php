@@ -109,17 +109,6 @@ class NodeTest extends TestCase
         $this->assertNull($this->node->getSshPrivateKey());
     }
 
-    public function testSetAndGetMainInterface(): void
-    {
-        $interface = 'eth1';
-        $this->node->setMainInterface($interface);
-        $this->assertEquals($interface, $this->node->getMainInterface());
-
-        // 测试空值
-        $this->node->setMainInterface(null);
-        $this->assertNull($this->node->getMainInterface());
-    }
-
     public function testSetAndGetFlowStatistics(): void
     {
         // 测试总流量设置

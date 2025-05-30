@@ -27,7 +27,6 @@ class NodeFixtures extends Fixture
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
 UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
 -----END PRIVATE KEY-----');
-        $node1->setMainInterface('eth0');
         $node1->setValid(true);
         $node1->setFrontendDomain('frontend1.example.com');
         $node1->setStatus(NodeStatus::ONLINE);
@@ -53,7 +52,6 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
 UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
 -----END PRIVATE KEY-----');
-        $node2->setMainInterface('eth0');
         $node2->setValid(true);
         $node2->setFrontendDomain('frontend2.example.com');
         $node2->setStatus(NodeStatus::OFFLINE);
@@ -77,7 +75,6 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
         $node3->setSshPort(22);
         $node3->setSshUser('parallels');
         $node3->setSshPassword('1234qwqw');
-        $node3->setMainInterface('eth0');
         $node3->setValid(true);
         $node3->setStatus(NodeStatus::OFFLINE);
         $manager->persist($node3);
@@ -91,7 +88,6 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
         $node4->setSshPort(22);
         $node4->setSshUser('parallels');
         $node4->setSshPassword('1234qwqw');
-        $node4->setMainInterface('eth0');
         $node4->setValid(true);
         $node4->setStatus(NodeStatus::OFFLINE);
         $manager->persist($node4);
