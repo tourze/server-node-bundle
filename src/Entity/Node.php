@@ -136,6 +136,14 @@ class Node implements \Stringable
     #[ORM\Column(length: 45, nullable: true, options: ['comment' => '在线IP'])]
     private ?string $onlineIp = null;
 
+    #[TrackColumn]
+    #[ORM\Column(length: 64, nullable: true, options: ['comment' => 'API密钥'])]
+    private ?string $apiKey = null;
+
+    #[TrackColumn]
+    #[ORM\Column(length: 64, nullable: true, options: ['comment' => 'API密钥'])]
+    private ?string $apiSecret = null;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '入带宽'])]
     private ?string $rxBandwidth = null;
 
@@ -164,6 +172,12 @@ class Node implements \Stringable
     #[UpdateTimeColumn]
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]
     private ?\DateTimeInterface $updateTime = null;
+
+    public function __construct()
+    {
+        $this->setApiKey('AK' . md5(uniqid()));
+        $this->setApiSecret('SK' . md5(uniqid()));
+    }
 
     public function getId(): ?string
     {
@@ -490,6 +504,30 @@ class Node implements \Stringable
     public function setOnlineIp(?string $onlineIp): static
     {
         $this->onlineIp = $onlineIp;
+
+        return $this;
+    }
+
+    public function getApiKey(): ?string
+    {
+        return $this->apiKey;
+    }
+
+    public function setApiKey(?string $apiKey): static
+    {
+        $this->apiKey = $apiKey;
+
+        return $this;
+    }
+
+    public function getApiSecret(): ?string
+    {
+        return $this->apiSecret;
+    }
+
+    public function setApiSecret(?string $apiSecret): static
+    {
+        $this->apiSecret = $apiSecret;
 
         return $this;
     }

@@ -68,5 +68,33 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
         $this->addReference(self::REFERENCE_NODE_2, $node2);
 
         $manager->flush();
+
+        $node3 = new Node();
+        $node3->setName('本地测试1');
+        $node3->setCountry(GBT_2659_2000::CN);
+        $node3->setDomainName('server3.example.com');
+        $node3->setSshHost('10.211.55.48');
+        $node3->setSshPort(22);
+        $node3->setSshUser('parallels');
+        $node3->setSshPassword('1234qwqw');
+        $node3->setMainInterface('eth0');
+        $node3->setValid(true);
+        $node3->setStatus(NodeStatus::OFFLINE);
+        $manager->persist($node3);
+        $manager->flush();
+
+        $node4 = new Node();
+        $node4->setName('本地测试2');
+        $node4->setCountry(GBT_2659_2000::CN);
+        $node4->setDomainName('server4.example.com');
+        $node4->setSshHost('10.211.55.49');
+        $node4->setSshPort(22);
+        $node4->setSshUser('parallels');
+        $node4->setSshPassword('1234qwqw');
+        $node4->setMainInterface('eth0');
+        $node4->setValid(true);
+        $node4->setStatus(NodeStatus::OFFLINE);
+        $manager->persist($node4);
+        $manager->flush();
     }
 }
