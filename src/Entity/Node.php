@@ -137,7 +137,7 @@ class Node implements \Stringable
     private ?string $onlineIp = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 64, nullable: true, options: ['comment' => 'API密钥'])]
+    #[ORM\Column(length: 64, unique: true, nullable: true, options: ['comment' => 'API密钥'])]
     private ?string $apiKey = null;
 
     #[TrackColumn]
