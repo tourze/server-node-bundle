@@ -265,7 +265,7 @@ class NodeCrudController extends AbstractCrudController
             $result = $ssh->exec('echo "SSH连接测试成功"');
             $message = "SSH连接成功！认证方式：{$authMethod}，服务器响应: " . trim($result);
 
-        } catch (\Throwable $e) {
+        } catch  (\Throwable $e) {
             $message = "SSH连接失败: " . $e->getMessage();
             $type = 'danger';
         }
