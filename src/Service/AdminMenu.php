@@ -4,9 +4,11 @@ namespace ServerNodeBundle\Service;
 
 use Knp\Menu\ItemInterface;
 use ServerNodeBundle\Entity\Node;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Tourze\EasyAdminMenuBundle\Service\LinkGeneratorInterface;
 use Tourze\EasyAdminMenuBundle\Service\MenuProviderInterface;
 
+#[Autoconfigure(public: true)]
 class AdminMenu implements MenuProviderInterface
 {
     public function __construct(private readonly LinkGeneratorInterface $linkGenerator)

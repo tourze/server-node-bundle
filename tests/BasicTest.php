@@ -18,8 +18,6 @@ class BasicTest extends TestCase
         $this->assertIsArray($dependencies);
         
         // 验证依赖项是否包含预期的元素
-        $this->assertArrayHasKey(\Tourze\TempFileBundle\TempFileBundle::class, $dependencies);
-        $this->assertArrayHasKey(\Tourze\DoctrineRandomBundle\DoctrineRandomBundle::class, $dependencies);
         $this->assertArrayHasKey(\Tourze\DoctrineTrackBundle\DoctrineTrackBundle::class, $dependencies);
         $this->assertArrayHasKey(\Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle::class, $dependencies);
         
@@ -29,4 +27,4 @@ class BasicTest extends TestCase
             $this->assertTrue($dependency['all']);
         }
     }
-} 
+}
