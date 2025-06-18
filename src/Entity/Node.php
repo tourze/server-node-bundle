@@ -8,16 +8,12 @@ use ServerNodeBundle\Enum\NodeStatus;
 use ServerNodeBundle\Repository\NodeRepository;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
-use Tourze\DoctrineTimestampBundle\Attribute\CreateTimeColumn;
-use Tourze\DoctrineTimestampBundle\Attribute\UpdateTimeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 
-#[AsPermission(title: '服务器节点')]
 #[ORM\Entity(repositoryClass: NodeRepository::class)]
 #[ORM\Table(name: 'ims_server_node', options: ['comment' => '服务器节点'])]
 class Node implements \Stringable
@@ -162,10 +158,7 @@ class Node implements \Stringable
     #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
     private ?string $updatedBy = null;
 
-    #[IndexColumn]
-    #[CreateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '创建时间'])]#[UpdateTimeColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '更新时间'])]public function __construct()
+    public function __construct()
     {
         $this->setApiKey('AK' . md5(uniqid()));
         $this->setApiSecret('SK' . md5(uniqid()));

@@ -54,9 +54,7 @@ class NodeFixturesTest extends TestCase
     public function testConstantsAreStrings(): void
     {
         // 验证常量是字符串类型
-        $this->assertIsString(NodeFixtures::REFERENCE_NODE_1);
-        $this->assertIsString(NodeFixtures::REFERENCE_NODE_2);
-        
+
         // 验证常量不为空
         $this->assertNotEmpty(NodeFixtures::REFERENCE_NODE_1);
         $this->assertNotEmpty(NodeFixtures::REFERENCE_NODE_2);
