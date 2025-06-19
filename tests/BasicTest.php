@@ -14,8 +14,8 @@ class BasicTest extends TestCase
         // 测试获取捆绑包依赖项
         $dependencies = $bundle::getBundleDependencies();
         
-        // 验证依赖项是否为数组
-        $this->assertIsArray($dependencies);
+        // 验证依赖项不为空
+        $this->assertNotEmpty($dependencies);
         
         // 验证依赖项是否包含预期的元素
         $this->assertArrayHasKey(\Tourze\DoctrineTrackBundle\DoctrineTrackBundle::class, $dependencies);

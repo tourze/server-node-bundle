@@ -35,16 +35,16 @@ class NodeCrudControllerTest extends TestCase
     {
         // 测试不同页面的字段配置
         $indexFields = $this->controller->configureFields(Crud::PAGE_INDEX);
-        $this->assertIsIterable($indexFields);
+        $this->assertNotNull($indexFields);
         
         $newFields = $this->controller->configureFields(Crud::PAGE_NEW);
-        $this->assertIsIterable($newFields);
+        $this->assertNotNull($newFields);
         
         $editFields = $this->controller->configureFields(Crud::PAGE_EDIT);
-        $this->assertIsIterable($editFields);
+        $this->assertNotNull($editFields);
         
         $detailFields = $this->controller->configureFields(Crud::PAGE_DETAIL);
-        $this->assertIsIterable($detailFields);
+        $this->assertNotNull($detailFields);
     }
 
     public function testConfigureFieldsReturnsCorrectFieldsForIndexPage(): void
@@ -104,9 +104,6 @@ class NodeCrudControllerTest extends TestCase
 
     public function testControllerHasTestSshMethod(): void
     {
-        // 验证Controller有testSsh方法
-        $this->assertTrue(method_exists($this->controller, 'testSsh'));
-        
         // 验证方法是public的
         $reflection = new \ReflectionMethod(NodeCrudController::class, 'testSsh');
         $this->assertTrue($reflection->isPublic());
@@ -114,10 +111,7 @@ class NodeCrudControllerTest extends TestCase
 
     public function testControllerHasConfigureMethods(): void
     {
-        // 验证Controller有必要的配置方法
-        $this->assertTrue(method_exists($this->controller, 'configureCrud'));
-        $this->assertTrue(method_exists($this->controller, 'configureFields'));
-        $this->assertTrue(method_exists($this->controller, 'configureFilters'));
-        $this->assertTrue(method_exists($this->controller, 'configureActions'));
+        // 验证Controller继承了必要的基类
+        $this->assertInstanceOf(AbstractCrudController::class, $this->controller);
     }
 } 

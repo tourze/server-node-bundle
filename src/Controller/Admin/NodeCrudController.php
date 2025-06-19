@@ -125,7 +125,6 @@ class NodeCrudController extends AbstractCrudController
             ->setNumOfRows(8)
             ->setHelp('SSH私钥内容，用于密钥认证。如果设置了私钥，将优先使用密钥认证而非密码认证。')
             ->hideOnIndex();
-        yield TextField::new('mainInterface', '主网卡');
 
         // 状态监控选项卡
         yield FormField::addTab('状态监控')
@@ -197,8 +196,8 @@ class NodeCrudController extends AbstractCrudController
             ->linkToCrudAction('testSsh')
             ->setCssClass('btn btn-primary')
             ->displayIf(function (Node $node) {
-                return $node->getSshHost() && $node->getSshPort() && $node->getSshUser() && 
-                       ($node->getSshPassword() || $node->getSshPrivateKey());
+                return $node->getSshHost() !== null && $node->getSshPort() > 0 && $node->getSshUser() !== null && 
+                       ($node->getSshPassword() !== null || $node->getSshPrivateKey() !== null);
             });
 
         return $actions
@@ -276,7 +275,7 @@ class NodeCrudController extends AbstractCrudController
         // 获取来源页面
         $referer = $request->headers->get('referer');
         // 如果有来源页面，则重定向回来源页面
-        if ($referer) {
+        if ($referer !== null) {
             return $this->redirect($referer);
         }
 

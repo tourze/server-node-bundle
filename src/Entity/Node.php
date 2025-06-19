@@ -10,8 +10,7 @@ use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 
 #[ORM\Entity(repositoryClass: NodeRepository::class)]
@@ -19,6 +18,7 @@ use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 class Node implements \Stringable
 {
     use TimestampableAware;
+    use BlameableAware;
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -42,9 +42,6 @@ class Node implements \Stringable
     #[ORM\Column(length: 200, nullable: true, options: ['comment' => '前置域名'])]
     private ?string $frontendDomain = null;
 
-    /**
-     * 主要用于识别这个机器的作用，是用户自己分配的，非主机名
-     */
     #[TrackColumn]
     #[ORM\Column(length: 120, unique: true, nullable: true, options: ['comment' => '唯一域名'])]
     private ?string $domainName = null;
@@ -71,36 +68,36 @@ class Node implements \Stringable
 
     #[TrackColumn]
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '总流量'])]
-    private ?string $totalFlow = '0';
+    private string $totalFlow = '0';
 
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '上传流量'])]
-    private ?string $uploadFlow = '0';
+    private string $uploadFlow = '0';
 
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '下载流量'])]
-    private ?string $downloadFlow = '0';
+    private string $downloadFlow = '0';
 
     #[TrackColumn]
-    #[ORM\Column(length: 120, nullable: true)]
+    #[ORM\Column(length: 120, nullable: true, options: ['comment' => '主机名'])]
     private ?string $hostname = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true, options: ['comment' => '虚拟化技术'])]
     private ?string $virtualizationTech = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true, options: ['comment' => 'CPU型号'])]
     private ?string $cpuModel = null;
 
     #[TrackColumn]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 3, nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 3, nullable: true, options: ['comment' => 'CPU最大频率'])]
     private ?string $cpuMaxFreq = null;
 
     #[TrackColumn]
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: true, options: ['comment' => 'CPU核心数'])]
     private ?int $cpuCount = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 120, nullable: true)]
+    #[ORM\Column(length: 120, nullable: true, options: ['comment' => '系统版本'])]
     private ?string $systemVersion = null;
 
     #[TrackColumn]
@@ -112,11 +109,11 @@ class Node implements \Stringable
     private ?string $systemArch = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 64, nullable: true)]
+    #[ORM\Column(length: 64, nullable: true, options: ['comment' => '系统UUID'])]
     private ?string $systemUuid = null;
 
     #[TrackColumn]
-    #[ORM\Column(length: 20, nullable: true)]
+    #[ORM\Column(length: 20, nullable: true, options: ['comment' => 'TCP拥塞控制'])]
     private ?string $tcpCongestionControl = null;
 
     #[ORM\Column(length: 40, nullable: true, enumType: NodeStatus::class, options: ['comment' => '状态'])]
@@ -147,16 +144,9 @@ class Node implements \Stringable
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true, options: ['comment' => '负载'])]
     private ?string $loadOneMinute = null;
 
-    #[ORM\Column(nullable: true, options: ['comment' => '在线数'])]
-    private ?int $userCount = 0;
+    #[ORM\Column(nullable: false, options: ['comment' => '在线数', 'default' => 0])]
+    private int $userCount = 0;
 
-    #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
-    private ?string $updatedBy = null;
 
     public function __construct()
     {
@@ -289,7 +279,7 @@ class Node implements \Stringable
         return $this;
     }
 
-    public function getTotalFlow(): ?string
+    public function getTotalFlow(): string
     {
         return $this->totalFlow;
     }
@@ -301,7 +291,7 @@ class Node implements \Stringable
         return $this;
     }
 
-    public function getUploadFlow(): ?string
+    public function getUploadFlow(): string
     {
         return $this->uploadFlow;
     }
@@ -313,7 +303,7 @@ class Node implements \Stringable
         return $this;
     }
 
-    public function getDownloadFlow(): ?string
+    public function getDownloadFlow(): string
     {
         return $this->downloadFlow;
     }
@@ -541,7 +531,7 @@ class Node implements \Stringable
         return $this;
     }
 
-    public function getUserCount(): ?int
+    public function getUserCount(): int
     {
         return $this->userCount;
     }
@@ -555,38 +545,16 @@ class Node implements \Stringable
 
     public function getAccessHost(): string
     {
-        if ($this->getDomainName()) {
+        if ($this->getDomainName() !== null) {
             return $this->getDomainName();
         }
 
         return $this->getSshHost();
     }
 
-    public function getCreatedBy(): ?string
+    public function __toString(): string
     {
-        return $this->createdBy;
-    }
-
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }public function __toString(): string
-    {
-        if (!$this->getId()) {
+        if ($this->getId() === null) {
             return '';
         }
 
