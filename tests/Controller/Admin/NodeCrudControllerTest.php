@@ -93,8 +93,8 @@ class NodeCrudControllerTest extends TestCase
             if ($attribute->getName() === 'EasyCorp\\Bundle\\EasyAdminBundle\\Attribute\\AdminAction') {
                 $hasAdminAction = true;
                 $arguments = $attribute->getArguments();
-                $this->assertEquals('{entityId}/test-ssh', $arguments[0]);
-                $this->assertEquals('test_ssh', $arguments[1]);
+                $this->assertEquals('{entityId}/test-ssh', $arguments['routePath']);
+                $this->assertEquals('test_ssh', $arguments['routeName']);
                 break;
             }
         }

@@ -30,6 +30,7 @@ use ServerNodeBundle\Enum\NodeStatus;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use ServerNodeBundle\Exception\SshConnectionException;
 use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 
 class NodeCrudController extends AbstractCrudController
@@ -215,7 +216,7 @@ class NodeCrudController extends AbstractCrudController
     /**
      * 测试SSH连接
      */
-    #[AdminAction('{entityId}/test-ssh', 'test_ssh')]
+    #[AdminAction(routePath: '{entityId}/test-ssh', routeName: 'test_ssh')]
     public function testSsh(AdminContext $context, Request $request, AdminUrlGenerator $adminUrlGenerator): Response
     {
         $node = $context->getEntity()->getInstance();
@@ -257,7 +258,7 @@ class NodeCrudController extends AbstractCrudController
             }
 
             if (!$loginSuccess) {
-                throw new \Exception("主机[{$host}:{$port}]连接失败，请检查SSH配置");
+                throw new SshConnectionException("主机[{$host}:{$port}]连接失败，请检查SSH配置");
             }
 
             // 执行简单命令测试
