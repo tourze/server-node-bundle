@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ServerNodeBundle;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Tourze\BundleDependency\BundleDependencyInterface;
 use Tourze\DoctrineIndexedBundle\DoctrineIndexedBundle;
@@ -16,6 +19,7 @@ class ServerNodeBundle extends Bundle implements BundleDependencyInterface
     public static function getBundleDependencies(): array
     {
         return [
+            DoctrineBundle::class => ['all' => true],
             DoctrineTrackBundle::class => ['all' => true],
             DoctrineIndexedBundle::class => ['all' => true],
             DoctrineSnowflakeBundle::class => ['all' => true],

@@ -1,13 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ServerNodeBundle\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Enum\NodeStatus;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
 
+#[When(env: 'test')]
+#[When(env: 'dev')]
 class NodeFixtures extends Fixture
 {
     public const REFERENCE_NODE_1 = 'node-1';
@@ -18,7 +23,7 @@ class NodeFixtures extends Fixture
         $node1 = new Node();
         $node1->setName('测试服务器1');
         $node1->setCountry(GBT_2659_2000::HK);
-        $node1->setDomainName('server1.example.com');
+        $node1->setDomainName('images.unsplash.com');
         $node1->setSshHost('192.168.1.100');
         $node1->setSshPort(22);
         $node1->setSshUser('root');
@@ -28,7 +33,7 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
 UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
 -----END PRIVATE KEY-----');
         $node1->setValid(true);
-        $node1->setFrontendDomain('frontend1.example.com');
+        $node1->setFrontendDomain('source.unsplash.com');
         $node1->setStatus(NodeStatus::ONLINE);
         $node1->setTags(['测试', '高性能']);
         $node1->setOnlineIp('192.168.1.100');
@@ -43,7 +48,7 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
         $node2 = new Node();
         $node2->setName('测试服务器2');
         $node2->setCountry(GBT_2659_2000::CN);
-        $node2->setDomainName('server2.example.com');
+        $node2->setDomainName('pixabay.com');
         $node2->setSshHost('192.168.1.101');
         $node2->setSshPort(22);
         $node2->setSshUser('admin');
@@ -53,7 +58,7 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
 UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
 -----END PRIVATE KEY-----');
         $node2->setValid(true);
-        $node2->setFrontendDomain('frontend2.example.com');
+        $node2->setFrontendDomain('www.pexels.com');
         $node2->setStatus(NodeStatus::OFFLINE);
         $node2->setTags(['测试', '备用']);
         $node2->setOnlineIp('192.168.1.101');
@@ -70,7 +75,7 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
         $node3 = new Node();
         $node3->setName('本地测试1');
         $node3->setCountry(GBT_2659_2000::CN);
-        $node3->setDomainName('server3.example.com');
+        $node3->setDomainName('unsplash.com');
         $node3->setSshHost('10.211.55.48');
         $node3->setSshPort(22);
         $node3->setSshUser('parallels');
@@ -83,7 +88,7 @@ UO1WOeNcPugFiTt0OzUpPtU3RLXZJ5VBL+wJ4w4YhOGxF5GhB8iV2jWzYkQpJLqE
         $node4 = new Node();
         $node4->setName('本地测试2');
         $node4->setCountry(GBT_2659_2000::CN);
-        $node4->setDomainName('server4.example.com');
+        $node4->setDomainName('www.pixabay.com');
         $node4->setSshHost('10.211.55.49');
         $node4->setSshPort(22);
         $node4->setSshUser('parallels');

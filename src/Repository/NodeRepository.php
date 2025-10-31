@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ServerNodeBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use ServerNodeBundle\Entity\Node;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Tourze\PHPUnitSymfonyKernelTest\Attribute\AsRepository;
 
 /**
- * @method Node|null find($id, $lockMode = null, $lockVersion = null)
- * @method Node|null findOneBy(array $criteria, array $orderBy = null)
- * @method Node[] findAll()
- * @method Node[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends ServiceEntityRepository<Node>
  */
 #[Autoconfigure(public: true)]
+#[AsRepository(entityClass: Node::class)]
 class NodeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -21,7 +22,13 @@ class NodeRepository extends ServiceEntityRepository
         parent::__construct($registry, Node::class);
     }
 
-    public function save(Node $entity, bool $flush = false): void
+    /**
+     * 保存Node实体。
+     *
+     * @param Node $entity 要保存的实体
+     * @param bool $flush 是否立即刷新EntityManager
+     */
+    public function save(Node $entity, bool $flush = true): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +37,13 @@ class NodeRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(Node $entity, bool $flush = false): void
+    /**
+     * 删除Node实体。
+     *
+     * @param Node $entity 要删除的实体
+     * @param bool $flush 是否立即刷新EntityManager
+     */
+    public function remove(Node $entity, bool $flush = true): void
     {
         $this->getEntityManager()->remove($entity);
 

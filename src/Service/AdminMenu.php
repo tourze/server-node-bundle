@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ServerNodeBundle\Service;
 
 use Knp\Menu\ItemInterface;
@@ -9,21 +11,25 @@ use Tourze\EasyAdminMenuBundle\Service\LinkGeneratorInterface;
 use Tourze\EasyAdminMenuBundle\Service\MenuProviderInterface;
 
 #[Autoconfigure(public: true)]
-class AdminMenu implements MenuProviderInterface
+readonly class AdminMenu implements MenuProviderInterface
 {
-    public function __construct(private readonly LinkGeneratorInterface $linkGenerator)
+    public function __construct(private LinkGeneratorInterface $linkGenerator)
     {
     }
 
     public function __invoke(ItemInterface $item): void
     {
-        if ($item->getChild('服务器管理') === null) {
+        if (null === $item->getChild('服务器管理')) {
             $item->addChild('服务器管理');
         }
 
-        $item->getChild('服务器管理')
-            ->addChild('服务器节点')
-            ->setUri($this->linkGenerator->getCurdListPage(Node::class))
-            ->setAttribute('icon', 'fas fa-server');
+        $serverManagementMenu = $item->getChild('服务器管理');
+        if (null !== $serverManagementMenu) {
+            $serverManagementMenu
+                ->addChild('服务器节点')
+                ->setUri($this->linkGenerator->getCurdListPage(Node::class))
+                ->setAttribute('icon', 'fas fa-server')
+            ;
+        }
     }
 }

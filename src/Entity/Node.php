@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ServerNodeBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ServerNodeBundle\Enum\NodeStatus;
 use ServerNodeBundle\Repository\NodeRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
@@ -21,128 +24,175 @@ class Node implements \Stringable
     use BlameableAware;
     use SnowflakeKeyAware;
 
+    #[Assert\Type(type: 'bool')]
     #[IndexColumn]
     #[TrackColumn]
     #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
     private ?bool $valid = false;
 
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 100)]
     #[TrackColumn]
     #[ORM\Column(length: 100, options: ['comment' => '名称'])]
     private string $name;
 
+    #[Assert\Choice(callback: [GBT_2659_2000::class, 'cases'])]
     #[TrackColumn]
     #[ORM\Column(length: 5, nullable: true, enumType: GBT_2659_2000::class, options: ['comment' => '国家'])]
     private ?GBT_2659_2000 $country = GBT_2659_2000::HK;
 
+    #[Assert\Length(max: 200)]
     #[TrackColumn]
     #[ORM\Column(length: 200, nullable: true, options: ['comment' => '前置域名'])]
     private ?string $frontendDomain = null;
 
+    #[Assert\Length(max: 120)]
     #[TrackColumn]
     #[ORM\Column(length: 120, unique: true, nullable: true, options: ['comment' => '唯一域名'])]
     private ?string $domainName = null;
 
+    #[Assert\Length(max: 60)]
     #[TrackColumn]
     #[ORM\Column(length: 60, options: ['comment' => 'SSH主机'])]
     private ?string $sshHost = null;
 
+    #[Assert\Range(min: 1, max: 65535)]
     #[TrackColumn]
     #[ORM\Column(options: ['comment' => 'SSH端口'])]
     private int $sshPort = 22;
 
+    #[Assert\Length(max: 60)]
     #[TrackColumn]
     #[ORM\Column(length: 60, nullable: true, options: ['comment' => 'SSH用户名'])]
     private ?string $sshUser = null;
 
+    #[Assert\Length(max: 120)]
     #[TrackColumn]
     #[ORM\Column(length: 120, nullable: true, options: ['comment' => 'SSH密码'])]
     private ?string $sshPassword = null;
 
+    #[Assert\Type(type: 'string')]
+    #[Assert\Length(max: 65535)]
     #[TrackColumn]
     #[ORM\Column(type: Types::TEXT, nullable: true, options: ['comment' => 'SSH私钥'])]
     private ?string $sshPrivateKey = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^\d+$/')]
+    #[Assert\Length(max: 20)]
     #[TrackColumn]
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '总流量'])]
     private string $totalFlow = '0';
 
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^\d+$/')]
+    #[Assert\Length(max: 20)]
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '上传流量'])]
     private string $uploadFlow = '0';
 
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^\d+$/')]
+    #[Assert\Length(max: 20)]
     #[ORM\Column(type: Types::BIGINT, options: ['comment' => '下载流量'])]
     private string $downloadFlow = '0';
 
+    #[Assert\Length(max: 120)]
     #[TrackColumn]
     #[ORM\Column(length: 120, nullable: true, options: ['comment' => '主机名'])]
     private ?string $hostname = null;
 
+    #[Assert\Length(max: 100)]
     #[TrackColumn]
     #[ORM\Column(length: 100, nullable: true, options: ['comment' => '虚拟化技术'])]
     private ?string $virtualizationTech = null;
 
+    #[Assert\Length(max: 100)]
     #[TrackColumn]
     #[ORM\Column(length: 100, nullable: true, options: ['comment' => 'CPU型号'])]
     private ?string $cpuModel = null;
 
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,3})?$/')]
+    #[Assert\Length(max: 14)]
     #[TrackColumn]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 3, nullable: true, options: ['comment' => 'CPU最大频率'])]
     private ?string $cpuMaxFreq = null;
 
+    #[Assert\PositiveOrZero]
     #[TrackColumn]
     #[ORM\Column(nullable: true, options: ['comment' => 'CPU核心数'])]
     private ?int $cpuCount = null;
 
+    #[Assert\Length(max: 120)]
     #[TrackColumn]
     #[ORM\Column(length: 120, nullable: true, options: ['comment' => '系统版本'])]
     private ?string $systemVersion = null;
 
+    #[Assert\Length(max: 100)]
     #[TrackColumn]
     #[ORM\Column(length: 100, nullable: true, options: ['comment' => '内核版本'])]
     private ?string $kernelVersion = null;
 
+    #[Assert\Length(max: 10)]
     #[TrackColumn]
     #[ORM\Column(length: 10, nullable: true, options: ['comment' => '系统架构'])]
     private ?string $systemArch = null;
 
+    #[Assert\Length(max: 64)]
     #[TrackColumn]
     #[ORM\Column(length: 64, nullable: true, options: ['comment' => '系统UUID'])]
     private ?string $systemUuid = null;
 
+    #[Assert\Length(max: 20)]
     #[TrackColumn]
     #[ORM\Column(length: 20, nullable: true, options: ['comment' => 'TCP拥塞控制'])]
     private ?string $tcpCongestionControl = null;
 
+    #[Assert\Choice(callback: [NodeStatus::class, 'cases'])]
     #[ORM\Column(length: 40, nullable: true, enumType: NodeStatus::class, options: ['comment' => '状态'])]
     private ?NodeStatus $status = NodeStatus::INIT;
 
+    /**
+     * @var array<string>|null
+     * @phpstan-ignore-next-line missingType.iterableValue
+     */
+    #[Assert\Type(type: 'array')]
     #[TrackColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '标签列表'])]
+    #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '标签列表'])]
     private ?array $tags = null;
 
+    #[Assert\Length(max: 45)]
     #[TrackColumn]
     #[ORM\Column(length: 45, nullable: true, options: ['comment' => '在线IP'])]
     private ?string $onlineIp = null;
 
+    #[Assert\Length(max: 64)]
     #[TrackColumn]
     #[ORM\Column(length: 64, unique: true, nullable: true, options: ['comment' => 'API密钥'])]
     private ?string $apiKey = null;
 
+    #[Assert\Length(max: 64)]
     #[TrackColumn]
     #[ORM\Column(length: 64, nullable: true, options: ['comment' => 'API密钥'])]
     private ?string $apiSecret = null;
 
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/')]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '入带宽'])]
     private ?string $rxBandwidth = null;
 
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/')]
+    #[Assert\Length(max: 13)]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true, options: ['comment' => '出带宽'])]
     private ?string $txBandwidth = null;
 
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/')]
+    #[Assert\Length(max: 8)]
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true, options: ['comment' => '负载'])]
     private ?string $loadOneMinute = null;
 
+    #[Assert\PositiveOrZero]
     #[ORM\Column(nullable: false, options: ['comment' => '在线数', 'default' => 0])]
     private int $userCount = 0;
-
 
     public function __construct()
     {
@@ -150,17 +200,14 @@ class Node implements \Stringable
         $this->setApiSecret('SK' . md5(uniqid()));
     }
 
-
     public function isValid(): ?bool
     {
         return $this->valid;
     }
 
-    public function setValid(?bool $valid): self
+    public function setValid(?bool $valid): void
     {
         $this->valid = $valid;
-
-        return $this;
     }
 
     public function getName(): string
@@ -168,11 +215,9 @@ class Node implements \Stringable
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getCountry(): ?GBT_2659_2000
@@ -180,11 +225,9 @@ class Node implements \Stringable
         return $this->country;
     }
 
-    public function setCountry(?GBT_2659_2000 $country): static
+    public function setCountry(?GBT_2659_2000 $country): void
     {
         $this->country = $country;
-
-        return $this;
     }
 
     public function getFrontendDomain(): ?string
@@ -192,11 +235,9 @@ class Node implements \Stringable
         return $this->frontendDomain;
     }
 
-    public function setFrontendDomain(?string $frontendDomain): static
+    public function setFrontendDomain(?string $frontendDomain): void
     {
         $this->frontendDomain = $frontendDomain;
-
-        return $this;
     }
 
     public function getDomainName(): ?string
@@ -204,11 +245,9 @@ class Node implements \Stringable
         return $this->domainName;
     }
 
-    public function setDomainName(?string $domainName): static
+    public function setDomainName(?string $domainName): void
     {
         $this->domainName = $domainName;
-
-        return $this;
     }
 
     public function getSshHost(): ?string
@@ -216,11 +255,9 @@ class Node implements \Stringable
         return $this->sshHost;
     }
 
-    public function setSshHost(string $sshHost): static
+    public function setSshHost(string $sshHost): void
     {
         $this->sshHost = $sshHost;
-
-        return $this;
     }
 
     public function getSshPort(): int
@@ -228,11 +265,9 @@ class Node implements \Stringable
         return $this->sshPort;
     }
 
-    public function setSshPort(int $sshPort): static
+    public function setSshPort(int $sshPort): void
     {
         $this->sshPort = $sshPort;
-
-        return $this;
     }
 
     public function getSshUser(): ?string
@@ -240,11 +275,9 @@ class Node implements \Stringable
         return $this->sshUser;
     }
 
-    public function setSshUser(?string $sshUser): static
+    public function setSshUser(?string $sshUser): void
     {
         $this->sshUser = $sshUser;
-
-        return $this;
     }
 
     public function getSshPassword(): ?string
@@ -252,11 +285,9 @@ class Node implements \Stringable
         return $this->sshPassword;
     }
 
-    public function setSshPassword(?string $sshPassword): static
+    public function setSshPassword(?string $sshPassword): void
     {
         $this->sshPassword = $sshPassword;
-
-        return $this;
     }
 
     public function getSshPrivateKey(): ?string
@@ -264,11 +295,9 @@ class Node implements \Stringable
         return $this->sshPrivateKey;
     }
 
-    public function setSshPrivateKey(?string $sshPrivateKey): static
+    public function setSshPrivateKey(?string $sshPrivateKey): void
     {
         $this->sshPrivateKey = $sshPrivateKey;
-
-        return $this;
     }
 
     public function getTotalFlow(): string
@@ -276,11 +305,9 @@ class Node implements \Stringable
         return $this->totalFlow;
     }
 
-    public function setTotalFlow(string $totalFlow): static
+    public function setTotalFlow(string $totalFlow): void
     {
         $this->totalFlow = $totalFlow;
-
-        return $this;
     }
 
     public function getUploadFlow(): string
@@ -288,11 +315,9 @@ class Node implements \Stringable
         return $this->uploadFlow;
     }
 
-    public function setUploadFlow(string $uploadFlow): static
+    public function setUploadFlow(string $uploadFlow): void
     {
         $this->uploadFlow = $uploadFlow;
-
-        return $this;
     }
 
     public function getDownloadFlow(): string
@@ -300,11 +325,9 @@ class Node implements \Stringable
         return $this->downloadFlow;
     }
 
-    public function setDownloadFlow(string $downloadFlow): static
+    public function setDownloadFlow(string $downloadFlow): void
     {
         $this->downloadFlow = $downloadFlow;
-
-        return $this;
     }
 
     public function getHostname(): ?string
@@ -312,11 +335,9 @@ class Node implements \Stringable
         return $this->hostname;
     }
 
-    public function setHostname(?string $hostname): static
+    public function setHostname(?string $hostname): void
     {
         $this->hostname = $hostname;
-
-        return $this;
     }
 
     public function getVirtualizationTech(): ?string
@@ -324,11 +345,9 @@ class Node implements \Stringable
         return $this->virtualizationTech;
     }
 
-    public function setVirtualizationTech(?string $virtualizationTech): static
+    public function setVirtualizationTech(?string $virtualizationTech): void
     {
         $this->virtualizationTech = $virtualizationTech;
-
-        return $this;
     }
 
     public function getCpuModel(): ?string
@@ -336,11 +355,9 @@ class Node implements \Stringable
         return $this->cpuModel;
     }
 
-    public function setCpuModel(?string $cpuModel): static
+    public function setCpuModel(?string $cpuModel): void
     {
         $this->cpuModel = $cpuModel;
-
-        return $this;
     }
 
     public function getCpuMaxFreq(): ?string
@@ -348,11 +365,9 @@ class Node implements \Stringable
         return $this->cpuMaxFreq;
     }
 
-    public function setCpuMaxFreq(?string $cpuMaxFreq): static
+    public function setCpuMaxFreq(?string $cpuMaxFreq): void
     {
         $this->cpuMaxFreq = $cpuMaxFreq;
-
-        return $this;
     }
 
     public function getCpuCount(): ?int
@@ -360,11 +375,9 @@ class Node implements \Stringable
         return $this->cpuCount;
     }
 
-    public function setCpuCount(?int $cpuCount): static
+    public function setCpuCount(?int $cpuCount): void
     {
         $this->cpuCount = $cpuCount;
-
-        return $this;
     }
 
     public function getSystemVersion(): ?string
@@ -372,11 +385,9 @@ class Node implements \Stringable
         return $this->systemVersion;
     }
 
-    public function setSystemVersion(?string $systemVersion): static
+    public function setSystemVersion(?string $systemVersion): void
     {
         $this->systemVersion = $systemVersion;
-
-        return $this;
     }
 
     public function getKernelVersion(): ?string
@@ -384,11 +395,9 @@ class Node implements \Stringable
         return $this->kernelVersion;
     }
 
-    public function setKernelVersion(?string $kernelVersion): static
+    public function setKernelVersion(?string $kernelVersion): void
     {
         $this->kernelVersion = $kernelVersion;
-
-        return $this;
     }
 
     public function getSystemArch(): ?string
@@ -396,11 +405,9 @@ class Node implements \Stringable
         return $this->systemArch;
     }
 
-    public function setSystemArch(?string $systemArch): static
+    public function setSystemArch(?string $systemArch): void
     {
         $this->systemArch = $systemArch;
-
-        return $this;
     }
 
     public function getSystemUuid(): ?string
@@ -408,11 +415,9 @@ class Node implements \Stringable
         return $this->systemUuid;
     }
 
-    public function setSystemUuid(?string $systemUuid): static
+    public function setSystemUuid(?string $systemUuid): void
     {
         $this->systemUuid = $systemUuid;
-
-        return $this;
     }
 
     public function getTcpCongestionControl(): ?string
@@ -420,11 +425,9 @@ class Node implements \Stringable
         return $this->tcpCongestionControl;
     }
 
-    public function setTcpCongestionControl(?string $tcpCongestionControl): static
+    public function setTcpCongestionControl(?string $tcpCongestionControl): void
     {
         $this->tcpCongestionControl = $tcpCongestionControl;
-
-        return $this;
     }
 
     public function getStatus(): ?NodeStatus
@@ -432,23 +435,26 @@ class Node implements \Stringable
         return $this->status;
     }
 
-    public function setStatus(?NodeStatus $status): static
+    public function setStatus(?NodeStatus $status): void
     {
         $this->status = $status;
-
-        return $this;
     }
 
+    /**
+     * @return list<string>|null
+     * @phpstan-return list<string>|null
+     */
     public function getTags(): ?array
     {
-        return $this->tags;
+        return null !== $this->tags ? array_values($this->tags) : null;
     }
 
-    public function setTags(?array $tags): static
+    /**
+     * @param list<string>|null $tags
+     */
+    public function setTags(?array $tags): void
     {
-        $this->tags = $tags;
-
-        return $this;
+        $this->tags = null !== $tags ? array_values($tags) : null;
     }
 
     public function getOnlineIp(): ?string
@@ -456,11 +462,9 @@ class Node implements \Stringable
         return $this->onlineIp;
     }
 
-    public function setOnlineIp(?string $onlineIp): static
+    public function setOnlineIp(?string $onlineIp): void
     {
         $this->onlineIp = $onlineIp;
-
-        return $this;
     }
 
     public function getApiKey(): ?string
@@ -468,11 +472,9 @@ class Node implements \Stringable
         return $this->apiKey;
     }
 
-    public function setApiKey(?string $apiKey): static
+    public function setApiKey(?string $apiKey): void
     {
         $this->apiKey = $apiKey;
-
-        return $this;
     }
 
     public function getApiSecret(): ?string
@@ -480,11 +482,9 @@ class Node implements \Stringable
         return $this->apiSecret;
     }
 
-    public function setApiSecret(?string $apiSecret): static
+    public function setApiSecret(?string $apiSecret): void
     {
         $this->apiSecret = $apiSecret;
-
-        return $this;
     }
 
     public function getRxBandwidth(): ?string
@@ -492,11 +492,9 @@ class Node implements \Stringable
         return $this->rxBandwidth;
     }
 
-    public function setRxBandwidth(?string $rxBandwidth): static
+    public function setRxBandwidth(?string $rxBandwidth): void
     {
         $this->rxBandwidth = $rxBandwidth;
-
-        return $this;
     }
 
     public function getTxBandwidth(): ?string
@@ -504,11 +502,9 @@ class Node implements \Stringable
         return $this->txBandwidth;
     }
 
-    public function setTxBandwidth(?string $txBandwidth): static
+    public function setTxBandwidth(?string $txBandwidth): void
     {
         $this->txBandwidth = $txBandwidth;
-
-        return $this;
     }
 
     public function getLoadOneMinute(): ?string
@@ -516,11 +512,9 @@ class Node implements \Stringable
         return $this->loadOneMinute;
     }
 
-    public function setLoadOneMinute(?string $loadOneMinute): static
+    public function setLoadOneMinute(?string $loadOneMinute): void
     {
         $this->loadOneMinute = $loadOneMinute;
-
-        return $this;
     }
 
     public function getUserCount(): int
@@ -528,25 +522,23 @@ class Node implements \Stringable
         return $this->userCount;
     }
 
-    public function setUserCount(int $userCount): static
+    public function setUserCount(int $userCount): void
     {
         $this->userCount = $userCount;
-
-        return $this;
     }
 
     public function getAccessHost(): string
     {
-        if ($this->getDomainName() !== null) {
+        if (null !== $this->getDomainName()) {
             return $this->getDomainName();
         }
 
-        return $this->getSshHost();
+        return $this->getSshHost() ?? '';
     }
 
     public function __toString(): string
     {
-        if ($this->getId() === null) {
+        if (null === $this->getId()) {
             return '';
         }
 

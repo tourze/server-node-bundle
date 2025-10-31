@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace ServerNodeBundle\Exception;
 
-class SshConnectionException extends \RuntimeException
+class InvalidEntityException extends \InvalidArgumentException
 {
 }

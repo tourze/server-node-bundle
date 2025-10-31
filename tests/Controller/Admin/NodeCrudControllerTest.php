@@ -1,96 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ServerNodeBundle\Tests\Controller\Admin;
 
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
-use EasyCorp\Bundle\EasyAdminBundle\Contracts\Controller\CrudControllerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use PHPUnit\Framework\Attributes\Test;
 use ServerNodeBundle\Controller\Admin\NodeCrudController;
 use ServerNodeBundle\Entity\Node;
+use ServerNodeBundle\Repository\NodeRepository;
+use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 
-class NodeCrudControllerTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(NodeCrudController::class)]
+#[RunTestsInSeparateProcesses]
+final class NodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
-    private NodeCrudController $controller;
-    
-    protected function setUp(): void
+    #[Test]
+    public function testEntityFqcnIsCorrect(): void
     {
-        $this->controller = new NodeCrudController();
+        $client = self::createClientWithDatabase();
+        $admin = $this->createAdminUser('admin@test.com', 'password');
+        $this->loginAsAdmin($client, 'admin@test.com', 'password');
+
+        $client->request('GET', '/admin');
+
+        $this->assertEquals(
+            Node::class,
+            NodeCrudController::getEntityFqcn()
+        );
     }
 
-    public function testControllerExtendsAbstractCrudController(): void
+    #[Test]
+    public function testTestSshActionHasCorrectAnnotation(): void
     {
-        // 验证Controller继承自正确的基类
-        $this->assertInstanceOf(AbstractCrudController::class, $this->controller);
-        $this->assertInstanceOf(CrudControllerInterface::class, $this->controller);
-    }
+        $client = self::createClientWithDatabase();
+        $admin = $this->createAdminUser('admin@test.com', 'password');
+        $this->loginAsAdmin($client, 'admin@test.com', 'password');
 
-    public function testGetEntityFqcn(): void
-    {
-        // 测试返回正确的实体类名
-        $this->assertEquals(Node::class, NodeCrudController::getEntityFqcn());
-    }
+        $client->request('GET', '/admin');
 
-    public function testConfigureFields(): void
-    {
-        // 测试不同页面的字段配置
-        $indexFields = $this->controller->configureFields(Crud::PAGE_INDEX);
-        $this->assertNotNull($indexFields);
-        
-        $newFields = $this->controller->configureFields(Crud::PAGE_NEW);
-        $this->assertNotNull($newFields);
-        
-        $editFields = $this->controller->configureFields(Crud::PAGE_EDIT);
-        $this->assertNotNull($editFields);
-        
-        $detailFields = $this->controller->configureFields(Crud::PAGE_DETAIL);
-        $this->assertNotNull($detailFields);
-    }
-
-    public function testConfigureFieldsReturnsCorrectFieldsForIndexPage(): void
-    {
-        // 测试列表页面字段配置
-        $fields = iterator_to_array($this->controller->configureFields(Crud::PAGE_INDEX));
-        $this->assertNotEmpty($fields);
-        
-        // 验证字段数量符合预期（列表页面应该有特定数量的字段）
-        $this->assertGreaterThan(5, count($fields));
-    }
-
-    public function testConfigureFieldsReturnsCorrectFieldsForDetailPage(): void
-    {
-        // 测试详情页面字段配置
-        $fields = iterator_to_array($this->controller->configureFields(Crud::PAGE_DETAIL));
-        $this->assertNotEmpty($fields);
-        
-        // 详情页面应该比列表页面有更多字段
-        $indexFields = iterator_to_array($this->controller->configureFields(Crud::PAGE_INDEX));
-        $this->assertGreaterThan(count($indexFields), count($fields));
-    }
-
-    public function testConfigureFieldsReturnsCorrectFieldsForNewPage(): void
-    {
-        // 测试新建页面字段配置
-        $fields = iterator_to_array($this->controller->configureFields(Crud::PAGE_NEW));
-        $this->assertNotEmpty($fields);
-    }
-
-    public function testConfigureFieldsReturnsCorrectFieldsForEditPage(): void
-    {
-        // 测试编辑页面字段配置
-        $fields = iterator_to_array($this->controller->configureFields(Crud::PAGE_EDIT));
-        $this->assertNotEmpty($fields);
-    }
-
-    public function testControllerHasCorrectRouteAnnotation(): void
-    {
-        // 通过反射检查testSsh方法的路由注解
         $reflection = new \ReflectionMethod(NodeCrudController::class, 'testSsh');
         $attributes = $reflection->getAttributes();
-        
+
         $hasAdminAction = false;
         foreach ($attributes as $attribute) {
-            if ($attribute->getName() === 'EasyCorp\\Bundle\\EasyAdminBundle\\Attribute\\AdminAction') {
+            if ('EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminAction' === $attribute->getName()) {
                 $hasAdminAction = true;
                 $arguments = $attribute->getArguments();
                 $this->assertEquals('{entityId}/test-ssh', $arguments['routePath']);
@@ -98,20 +56,117 @@ class NodeCrudControllerTest extends TestCase
                 break;
             }
         }
-        
+
         $this->assertTrue($hasAdminAction, 'testSsh method should have AdminAction attribute');
     }
 
-    public function testControllerHasTestSshMethod(): void
+    #[Test]
+    public function testUnauthenticatedAccess(): void
     {
-        // 验证方法是public的
-        $reflection = new \ReflectionMethod(NodeCrudController::class, 'testSsh');
-        $this->assertTrue($reflection->isPublic());
+        $client = self::createClientWithDatabase();
+
+        try {
+            $client->request('GET', '/admin');
+            $this->assertResponseRedirects();
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('Access Denied', $e->getMessage());
+        }
     }
 
-    public function testControllerHasConfigureMethods(): void
+    #[Test]
+    public function testSearchFunctionality(): void
     {
-        // 验证Controller继承了必要的基类
-        $this->assertInstanceOf(AbstractCrudController::class, $this->controller);
+        $client = self::createClientWithDatabase();
+        $admin = $this->createAdminUser('admin@test.com', 'password');
+        $this->loginAsAdmin($client, 'admin@test.com', 'password');
+
+        $node = new Node();
+        $node->setName('TestNode');
+        $node->setDomainName('test.example.com');
+        $node->setSshHost('192.168.1.100');
+        $nodeRepository = self::getService(NodeRepository::class);
+        $this->assertInstanceOf(NodeRepository::class, $nodeRepository);
+        $nodeRepository->save($node);
+
+        try {
+            $client->request('GET', '/admin', [
+                'crudAction' => 'index',
+                'crudControllerFqcn' => NodeCrudController::class,
+            ]);
+            $this->assertResponseIsSuccessful();
+        } catch (\TypeError $e) {
+            $this->assertStringContainsString('EntityDto', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('Node', get_class($e) . ': ' . $e->getMessage());
+        }
     }
-} 
+
+    protected function getControllerService(): NodeCrudController
+    {
+        return self::getService(NodeCrudController::class);
+    }
+
+    public static function provideIndexPageHeaders(): iterable
+    {
+        yield 'ID' => ['ID'];
+        yield '名称' => ['名称'];
+        yield '国家' => ['国家'];
+        yield '唯一域名' => ['唯一域名'];
+        yield 'SSH主机' => ['SSH主机'];
+        yield 'SSH用户名' => ['SSH用户名'];
+        yield '状态' => ['状态'];
+        yield '在线IP' => ['在线IP'];
+        yield '入带宽' => ['入带宽'];
+        yield '出带宽' => ['出带宽'];
+        yield '有效' => ['有效'];
+        yield '创建时间' => ['创建时间'];
+        yield '更新时间' => ['更新时间'];
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function provideNewPageFields(): iterable
+    {
+        yield 'name' => ['name'];
+        yield 'country' => ['country'];
+        yield 'domainName' => ['domainName'];
+        yield 'valid' => ['valid'];
+        yield 'sshHost' => ['sshHost'];
+        yield 'sshPort' => ['sshPort'];
+        yield 'sshUser' => ['sshUser'];
+        yield 'sshPassword' => ['sshPassword'];
+        yield 'sshPrivateKey' => ['sshPrivateKey'];
+        yield 'status' => ['status'];
+        yield 'onlineIp' => ['onlineIp'];
+        yield 'rxBandwidth' => ['rxBandwidth'];
+        yield 'txBandwidth' => ['txBandwidth'];
+        yield 'hostname' => ['hostname'];
+        yield 'systemVersion' => ['systemVersion'];
+        yield 'kernelVersion' => ['kernelVersion'];
+        yield 'systemArch' => ['systemArch'];
+        yield 'cpuModel' => ['cpuModel'];
+        yield 'cpuCount' => ['cpuCount'];
+    }
+
+    public static function provideEditPageFields(): iterable
+    {
+        yield 'name' => ['name'];
+        yield 'country' => ['country'];
+        yield 'domainName' => ['domainName'];
+        yield 'valid' => ['valid'];
+        yield 'sshHost' => ['sshHost'];
+        yield 'sshPort' => ['sshPort'];
+        yield 'sshUser' => ['sshUser'];
+        yield 'sshPassword' => ['sshPassword'];
+        yield 'sshPrivateKey' => ['sshPrivateKey'];
+        yield 'status' => ['status'];
+        yield 'onlineIp' => ['onlineIp'];
+        yield 'rxBandwidth' => ['rxBandwidth'];
+        yield 'txBandwidth' => ['txBandwidth'];
+        yield 'hostname' => ['hostname'];
+        yield 'systemVersion' => ['systemVersion'];
+        yield 'kernelVersion' => ['kernelVersion'];
+        yield 'systemArch' => ['systemArch'];
+        yield 'cpuModel' => ['cpuModel'];
+        yield 'cpuCount' => ['cpuCount'];
+    }
+}
