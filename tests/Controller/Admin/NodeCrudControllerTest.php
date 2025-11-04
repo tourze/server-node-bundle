@@ -7,6 +7,7 @@ namespace ServerNodeBundle\Tests\Controller\Admin;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use ServerNodeBundle\Controller\Admin\NodeCrudController;
 use ServerNodeBundle\Entity\Node;
 use ServerNodeBundle\Repository\NodeRepository;
@@ -22,11 +23,7 @@ final class NodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
     #[Test]
     public function testEntityFqcnIsCorrect(): void
     {
-        $client = self::createClientWithDatabase();
-        $admin = $this->createAdminUser('admin@test.com', 'password');
-        $this->loginAsAdmin($client, 'admin@test.com', 'password');
-
-        $client->request('GET', '/admin');
+        // 该断言仅涉及静态方法，无需发起HTTP请求或登录
 
         $this->assertEquals(
             Node::class,
@@ -37,11 +34,7 @@ final class NodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
     #[Test]
     public function testTestSshActionHasCorrectAnnotation(): void
     {
-        $client = self::createClientWithDatabase();
-        $admin = $this->createAdminUser('admin@test.com', 'password');
-        $this->loginAsAdmin($client, 'admin@test.com', 'password');
-
-        $client->request('GET', '/admin');
+        // 该测试仅检查注解配置，无需访问受保护路由
 
         $reflection = new \ReflectionMethod(NodeCrudController::class, 'testSsh');
         $attributes = $reflection->getAttributes();
@@ -76,9 +69,8 @@ final class NodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
     #[Test]
     public function testSearchFunctionality(): void
     {
-        $client = self::createClientWithDatabase();
-        $admin = $this->createAdminUser('admin@test.com', 'password');
-        $this->loginAsAdmin($client, 'admin@test.com', 'password');
+        // 使用基类提供的已认证客户端，确保拥有 ROLE_ADMIN
+        $client = $this->createAuthenticatedClient();
 
         $node = new Node();
         $node->setName('TestNode');
@@ -89,10 +81,9 @@ final class NodeCrudControllerTest extends AbstractEasyAdminControllerTestCase
         $nodeRepository->save($node);
 
         try {
-            $client->request('GET', '/admin', [
-                'crudAction' => 'index',
-                'crudControllerFqcn' => NodeCrudController::class,
-            ]);
+            // 通过 EasyAdmin 的 URL 生成器访问列表页面，避免直接请求 /admin 造成权限误判
+            $url = $this->generateAdminUrl(Action::INDEX);
+            $client->request('GET', $url);
             $this->assertResponseIsSuccessful();
         } catch (\TypeError $e) {
             $this->assertStringContainsString('EntityDto', $e->getMessage());
