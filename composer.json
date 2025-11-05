@@ -35,6 +35,7 @@
     "tourze/easy-admin-menu-bundle": "1.0.*",
     "tourze/enum-extra": "1.0.*",
     "tourze/gb-t-2659": "1.0.*",
+    "tourze/relay-service-contracts": "1.0.*",
     "tourze/symfony-dependency-service-loader": "1.0.*"
   },
   "require-dev": {
