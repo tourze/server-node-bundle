@@ -15,10 +15,11 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use Tourze\GBT2659\Alpha2Code as GBT_2659_2000;
+use Tourze\RelayServiceContracts\NodeInterface;
 
 #[ORM\Entity(repositoryClass: NodeRepository::class)]
 #[ORM\Table(name: 'ims_server_node', options: ['comment' => '服务器节点'])]
-class Node implements \Stringable
+class Node implements \Stringable, NodeInterface
 {
     use TimestampableAware;
     use BlameableAware;
@@ -153,7 +154,6 @@ class Node implements \Stringable
 
     /**
      * @var array<string>|null
-     * @phpstan-ignore-next-line missingType.iterableValue
      */
     #[Assert\Type(type: 'array')]
     #[TrackColumn]
